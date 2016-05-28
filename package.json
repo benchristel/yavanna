@@ -1,0 +1,22 @@
+{
+  "name": "yavanna",
+  "version": "0.0.0",
+  "description": "Tiny dependency injection framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "dependency",
+    "injection",
+    "di",
+    "browser",
+    "framework"
+  ],
+  "author": "Ben Christel",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jasmine": "^2.3.0"
+  }
+}
