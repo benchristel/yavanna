@@ -1,5 +1,5 @@
 {
-  "name": "yavanna",
+  "name": "@benchristel/yavanna",
   "version": "0.0.0",
   "description": "Tiny dependency injection framework",
   "main": "index.js",
