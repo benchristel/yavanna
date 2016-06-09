@@ -1,50 +1,53 @@
-var cache = {}
-var registeredFactories = {}
-var provender = {}
+function Yavanna() {
+  var cache = {}
+  var registeredFactories = {}
+  var provender = {}
 
-var Yavanna = {}
+  var self = {}
 
-Yavanna.provide = function(name, factory) {
-  validateProvideArgs(name, factory)
+  self.provide = function(name, factory) {
+    validateProvideArgs(name, factory)
 
-  registeredFactories[name] = factory
+    registeredFactories[name] = factory
 
-  Object.defineProperty(provender, name, {
-    get: function() { return Yavanna.get(name) }
-  })
+    Object.defineProperty(provender, name, {
+      get: function() { return self.get(name) }
+    })
 
-  return factory
-}
-
-Yavanna.get = function(name) {
-  validateGetArgs(name)
-
-
-  if (!cache[name]) {
-    cache[name] = registeredFactories[name](provender)
-  }
-  
-  return cache[name] 
-}
-
-function validateProvideArgs(name, factory) {
-  if (typeof name !== 'string') {
-    throw new Error('Yavanna.provide expects a name as the first argument.')
+    return factory
   }
 
-  if (typeof factory !== 'function') {
-    throw Error('Yavanna.provide expects a factory function as the second argument. Check the declaration of `' + name + '`.')
+  self.get = function(name) {
+    validateGetArgs(name)
+
+    if (!cache[name]) {
+      cache[name] = registeredFactories[name](provender)
+    }
+
+    return cache[name]
   }
 
-  if (registeredFactories[name]) {
-    throw Error('Yavanna: cannot override the previously registered factory for `' + name + '`.')
-  }
-}
+  function validateProvideArgs(name, factory) {
+    if (typeof name !== 'string') {
+      throw new Error('Yavanna.provide expects a name as the first argument.')
+    }
 
-function validateGetArgs(name) {
-  if (!registeredFactories[name]) {
-    throw Error('Yavanna: no factory registered for `' + name + '`.')
+    if (typeof factory !== 'function') {
+      throw Error('Yavanna.provide expects a factory function as the second argument. Check the declaration of `' + name + '`.')
+    }
+
+    if (registeredFactories[name]) {
+      throw Error('Yavanna: cannot override the previously registered factory for `' + name + '`.')
+    }
   }
+
+  function validateGetArgs(name) {
+    if (!registeredFactories[name]) {
+      throw Error('Yavanna: no factory registered for `' + name + '`.')
+    }
+  }
+
+  return self
 }
 
 module.exports = Yavanna
