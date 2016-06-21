@@ -64,10 +64,29 @@ describe('Yavanna', function() {
     )
   })
 
+  it('works when two things require the same dependency', function() {
+    var yv = Yavanna()
+    yv.provide('A', function (inj) { return inj.CommonDependency })
+    yv.provide('B', function (inj) { return inj.CommonDependency })
+    yv.provide('CommonDependency', function () { return 'it works' })
+    expect(yv.get('A')).toEqual('it works')
+    expect(yv.get('B')).toEqual('it works')
+  })
+
   describe('Injecting test doubles', function() {
     it('works just by calling the factory passed to Yavanna', function() {
       var melian = Melian({Peaches: false})
       expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
+    })
+  })
+
+  describe('In the presence of a dependency cycle', function() {
+    it('throws a descriptive error', function() {
+      var yv = Yavanna()
+      yv.provide('A', function(inj) { return inj.B })
+      yv.provide('B', function(inj) { return inj.A })
+
+      expect(function() { yv.get('A') }).toThrowError('Yavanna: cannot get `A` because there is a dependency cycle: A -> B -> A')
     })
   })
 })

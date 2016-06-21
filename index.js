@@ -2,6 +2,7 @@ function Yavanna() {
   var cache = {}
   var registeredFactories = {}
   var provender = {}
+  var dependencyStack = []
 
   var self = {}
 
@@ -20,8 +21,17 @@ function Yavanna() {
   self.get = function(name) {
     validateGetArgs(name)
 
+    if (dependencyStack.indexOf(name) > -1) {
+      throw Error('Yavanna: cannot get `' + name + '` because there is a dependency cycle: ' + dependencyStack.join(' -> ') + ' -> ' + name)
+    }
+
     if (!cache[name]) {
-      cache[name] = registeredFactories[name](provender)
+      dependencyStack.push(name)
+      try {
+        cache[name] = registeredFactories[name](provender)
+      } finally {
+        dependencyStack.pop()
+      }
     }
 
     return cache[name]
