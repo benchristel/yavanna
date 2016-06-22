@@ -10,10 +10,10 @@ https://en.wikipedia.org/wiki/Yavanna
 
 ## How?
 
-### Require the Yavanna API
+### Require Yavanna and create an instance
 
 ```javascript
-const {provide, get} = require('yavanna')
+const yavanna = require('yavanna')()
 ```
 
 ### Register a factory function
@@ -21,18 +21,28 @@ const {provide, get} = require('yavanna')
 Here, our factory is named `peaches` and requires `water` and `sunlight` as dependencies
 
 ```javascript
-provide('peaches', ({water, sunlight}) => {
-  if (water && sunlight) return 'PEACHES!'
+yavanna.provide('peaches', ({water, sunlight}) => {
+  if (water && sunlight) {
+    return 'PEACHES!'
+  } else {
+    return 'no peaches :('
+  }
 })
 
-provide('water', () => 'delicious water')
-provide('sunlight', () => 'glorious sunlight')
+yavanna.provide('water', () => 'delicious water')
+yavanna.provide('sunlight', () => 'glorious sunlight')
 ```
 
 ### Get your stuff, with dependencies injected
 
 ```javascript
-get('peaches') // returns 'PEACHES!'
+yavanna.get('peaches') // returns 'PEACHES!'
+```
+
+### Override the dependencies with test doubles
+
+```javascript
+yavanna.get('peaches', {water: false, sunlight: false}) // returns 'no peaches :('
 ```
 
 ## Why?
