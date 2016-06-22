@@ -78,6 +78,31 @@ describe('Yavanna', function() {
       var melian = Melian({Peaches: false})
       expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
     })
+
+    it('works by passing dependencies to override to Yavanna#get', function() {
+      var melian = yv.get('Melian', {Peaches: false})
+      expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
+    })
+
+    it('does not read from the cache when overriding dependencies', function() {
+      var yv = Yavanna()
+      yv.provide('Sum', function(inj) { return inj.A + inj.B  })
+      yv.provide('A', function() { return 5 })
+      yv.provide('B', function() { return 7 })
+
+      expect(yv.get('Sum')).toEqual(12)
+      expect(yv.get('Sum', {A: 3, B: 4})).toEqual(7)
+    })
+
+    it('does not write to the cache when overriding dependencies', function() {
+      var yv = Yavanna()
+      yv.provide('Sum', function(inj) { return inj.A + inj.B  })
+      yv.provide('A', function() { return 5 })
+      yv.provide('B', function() { return 7 })
+
+      expect(yv.get('Sum', {A: 3, B: 4})).toEqual(7)
+      expect(yv.get('Sum')).toEqual(12)
+    })
   })
 
   describe('In the presence of a dependency cycle', function() {

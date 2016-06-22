@@ -18,8 +18,12 @@ function Yavanna() {
     return factory
   }
 
-  self.get = function(name) {
+  self.get = function(name, overrides) {
     validateGetArgs(name)
+
+    if (overrides) {
+      return registeredFactories[name](overrides)
+    }
 
     if (dependencyStack.indexOf(name) > -1) {
       throw Error('Yavanna: cannot get `' + name + '` because there is a dependency cycle: ' + dependencyStack.join(' -> ') + ' -> ' + name)
