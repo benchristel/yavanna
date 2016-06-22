@@ -2,6 +2,8 @@
 
 A JavaScript dependency injection framework
 
+![CircleCI Build Status](https://circleci.com/gh/benchristel/yavanna.svg?style=shield&circle-token=058bb5224f0693d2f5891954ce85ce8879c88791)
+
 ## What?
 
 https://en.wikipedia.org/wiki/Yavanna
