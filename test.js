@@ -28,6 +28,11 @@ describe('Yavanna', function() {
     expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
   })
 
+  it('provides peaches with terse syntax', function () {
+    var melian = yv('Melian')
+    expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
+  })
+
   it('errors if you try to get something that doesn\'t exist', function() {
     expect(function() {
       yv.get('nemo')
@@ -84,6 +89,11 @@ describe('Yavanna', function() {
       expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
     })
 
+    it('works by passing overrides with terse syntax', function() {
+      var melian = yv('Melian', {Peaches: false})
+      expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
+    })
+
     it('does not read from the cache when overriding dependencies', function() {
       var yv = Yavanna()
       yv.provide('Sum', function(inj) { return inj.A + inj.B  })
@@ -105,6 +115,14 @@ describe('Yavanna', function() {
     })
   })
 
+  describe('Registering dependencies', function() {
+    it('has a terse syntax', function() {
+      var yv = Yavanna()
+      yv('Foo', function () { return 'this is foo' })
+      expect(yv('Foo')).toEqual('this is foo')
+    })
+  })
+
   describe('In the presence of a dependency cycle', function() {
     it('throws a descriptive error', function() {
       var yv = Yavanna()
@@ -115,5 +133,4 @@ describe('Yavanna', function() {
     })
   })
 })
-
 

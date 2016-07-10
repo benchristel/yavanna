@@ -4,7 +4,12 @@ function Yavanna() {
   var provender = {}
   var dependencyStack = []
 
-  var self = {}
+  var self = function(arg1, arg2) {
+    if (typeof arg2 === 'function') {
+      return self.provide(arg1, arg2)
+    }
+    return self.get(arg1, arg2)
+  }
 
   self.provide = function(name, factory) {
     validateProvideArgs(name, factory)

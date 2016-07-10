@@ -13,7 +13,7 @@ https://en.wikipedia.org/wiki/Yavanna
 ### Require Yavanna and create an instance
 
 ```javascript
-const yavanna = require('yavanna')()
+const yavanna = require('@benchristel/yavanna')()
 ```
 
 ### Register a factory function
@@ -43,6 +43,29 @@ yavanna.get('peaches') // returns 'PEACHES!'
 
 ```javascript
 yavanna.get('peaches', {water: false, sunlight: false}) // returns 'no peaches :('
+```
+
+### Terse syntax
+
+Instead of using `.get()` and `.provide()`, you can simply call the function returned from the yavanna constructor.
+
+```javascript
+const inject = require('yavanna')()
+
+yavanna('random', () => () => Math.random())
+
+yavanna('egg', ({random}) => {
+  return {
+    hatch() {
+      if (random() > 0.5) return 'it is an seagull'
+      return 'nought but a soggy chicken'
+    }
+  }
+})
+
+// and then, in your tests
+
+expect(yavanna('egg', {random: () => 0.51}).hatch()).toEqual('it is an seagull')
 ```
 
 ## Why?
