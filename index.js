@@ -1,8 +1,5 @@
 function Yavanna() {
-  var cache = {}
   var registeredFactories = {}
-  var provender = {}
-  var dependencyStack = []
 
   var self = function(arg1, arg2) {
     if (typeof arg2 === 'function') {
@@ -16,46 +13,50 @@ function Yavanna() {
 
     registeredFactories[name] = factory
 
-    Object.defineProperty(provender, name, {
-      get: function() { return self.get(name) },
-      configurable: true
-    })
-
     return factory
   }
 
   self.get = function(name, overrides) {
     validateGetArgs(name)
 
+    var provender = {}
+    var cache = {}
+    var dependencyStack = []
+
+    forEachPropertyIn(registeredFactories, function(key) {
+      Object.defineProperty(provender, key, {
+        get: function() { return getWithCycleDetection(key) },
+        configurable: true
+      })
+    })
+
     if (overrides) {
-      var provenderWithOverrides = Object.create(provender);
+      forEachPropertyIn(overrides, function(key) {
+        Object.defineProperty(provender, key, {
+          get: function() { return overrides[key] },
+          configurable: true
+        })
+      })
+    }
 
-      for (var key in overrides) {
-        (function(key) {
-          Object.defineProperty(provenderWithOverrides, key, {
-            get: function() { return overrides[key] },
-            configurable: true
-          })
-        })(key);
+    return provender[name]
+
+    function getWithCycleDetection(name) {
+      if (dependencyStack.indexOf(name) > -1) {
+        throw Error('Yavanna: cannot get `' + name + '` because there is a dependency cycle: ' + dependencyStack.join(' -> ') + ' -> ' + name)
       }
 
-      return registeredFactories[name](provenderWithOverrides)
-    }
-
-    if (dependencyStack.indexOf(name) > -1) {
-      throw Error('Yavanna: cannot get `' + name + '` because there is a dependency cycle: ' + dependencyStack.join(' -> ') + ' -> ' + name)
-    }
-
-    if (!cache[name]) {
-      dependencyStack.push(name)
-      try {
-        cache[name] = registeredFactories[name](provender)
-      } finally {
-        dependencyStack.pop()
+      if (!cache[name]) {
+        dependencyStack.push(name)
+        try {
+          cache[name] = registeredFactories[name](provender)
+        } finally {
+          dependencyStack.pop()
+        }
       }
-    }
 
-    return cache[name]
+      return cache[name]
+    }
   }
 
   function validateProvideArgs(name, factory) {
@@ -75,6 +76,12 @@ function Yavanna() {
   function validateGetArgs(name) {
     if (!registeredFactories[name]) {
       throw Error('Yavanna: no factory registered for `' + name + '`.')
+    }
+  }
+
+  function forEachPropertyIn(obj, fn) {
+    for (var key in obj) {
+      fn(key)
     }
   }
 

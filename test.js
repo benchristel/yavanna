@@ -78,6 +78,20 @@ describe('Yavanna', function() {
     expect(yv.get('B')).toEqual('it works')
   })
 
+  it('builds each dependency at most once per call to `get`', function() {
+    var yv = Yavanna()
+    var calls = 0
+    yv.provide('A', function (inj) { return inj.B + inj.C })
+    yv.provide('B', function (inj) { return inj.CommonDependency })
+    yv.provide('C', function (inj) { return inj.CommonDependency })
+    yv.provide('CommonDependency', function () {
+      calls++
+      return 'it works'
+    })
+    expect(yv.get('A')).toEqual('it worksit works')
+    expect(calls).toEqual(1)
+  })
+
   describe('Injecting test doubles', function() {
     it('works just by calling the factory passed to Yavanna', function() {
       var melian = Melian({Peaches: false})
@@ -122,6 +136,17 @@ describe('Yavanna', function() {
 
       expect(yv.get('Sum', {B: 3})).toEqual(8)
       expect(yv.get('Sum')).toEqual(12)
+    })
+
+    it('can override dependences deep in the require chain', function() {
+      var yv = Yavanna()
+      yv.provide('Sum', function(inj) { return inj.A + inj.B })
+      yv.provide('A', function(inj) { return inj.B + inj.C })
+      yv.provide('B', function() { return 2 })
+      yv.provide('C', function() { return 7 })
+
+      expect(yv.get('Sum', {C: 3})).toEqual(7)
+      expect(yv.get('Sum')).toEqual(11)
     })
   })
 
