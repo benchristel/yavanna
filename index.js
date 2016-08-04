@@ -17,7 +17,8 @@ function Yavanna() {
     registeredFactories[name] = factory
 
     Object.defineProperty(provender, name, {
-      get: function() { return self.get(name) }
+      get: function() { return self.get(name) },
+      configurable: true
     })
 
     return factory
@@ -27,7 +28,18 @@ function Yavanna() {
     validateGetArgs(name)
 
     if (overrides) {
-      return registeredFactories[name](overrides)
+      var provenderWithOverrides = Object.create(provender);
+
+      for (var key in overrides) {
+        (function(key) {
+          Object.defineProperty(provenderWithOverrides, key, {
+            get: function() { return overrides[key] },
+            configurable: true
+          })
+        })(key);
+      }
+
+      return registeredFactories[name](provenderWithOverrides)
     }
 
     if (dependencyStack.indexOf(name) > -1) {

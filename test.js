@@ -113,6 +113,16 @@ describe('Yavanna', function() {
       expect(yv.get('Sum', {A: 3, B: 4})).toEqual(7)
       expect(yv.get('Sum')).toEqual(12)
     })
+
+    it('does not affect non-overridden dependencies', function() {
+      var yv = Yavanna()
+      yv.provide('Sum', function(inj) { return inj.A + inj.B })
+      yv.provide('A', function() { return 5 })
+      yv.provide('B', function() { return 7 })
+
+      expect(yv.get('Sum', {B: 3})).toEqual(8)
+      expect(yv.get('Sum')).toEqual(12)
+    })
   })
 
   describe('Registering dependencies', function() {
