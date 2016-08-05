@@ -79,13 +79,13 @@ function Yavanna() {
     }
   }
 
-  function forEachPropertyIn(obj, fn) {
-    for (var key in obj) {
-      fn(key)
-    }
-  }
-
   return self
+}
+
+function forEachPropertyIn(obj, fn) {
+  for (var key in obj) {
+    fn(key)
+  }
 }
 
 module.exports = Yavanna
