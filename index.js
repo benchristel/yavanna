@@ -1,66 +1,50 @@
 function Yavanna() {
-  var registeredFactories = {}
+  return CachingInjector({}, {})
+}
 
-  var self = function(arg1, arg2) {
-    if (typeof arg2 === 'function') {
-      return self.provide(arg1, arg2)
-    }
-    return self.get(arg1, arg2)
-  }
+function CachingInjector(factories, cache) {
+  var dependencyStack = []
+  var injectables = {}
 
-  self.provide = function(name, factory) {
-    validateProvideArgs(name, factory)
+  forEachPropertyIn(factories, function(name) {
+    makeInjectable(name)
+  })
 
-    registeredFactories[name] = factory
+  var self = {
+    get: function(name) {
+      validateGetArgs(name)
 
-    return factory
-  }
-
-  self.get = function(name, overrides) {
-    validateGetArgs(name)
-
-    var provender = {}
-    var cache = {}
-    var dependencyStack = []
-
-    forEachPropertyIn(registeredFactories, function(key) {
-      defineGetter(provender, key, function() {
-        return getWithCycleDetection(key)
-      })
-    })
-
-    if (overrides) {
-      forEachPropertyIn(overrides, function(key) {
-        defineGetter(provender, key, function() {
-          return overrides[key]
-        })
-      })
-    }
-
-    return provender[name]
-
-    function getWithCycleDetection(name) {
       if (dependencyStack.indexOf(name) > -1) {
         throw Error('Yavanna: cannot get `' + name + '` because there is a dependency cycle: ' + dependencyStack.join(' -> ') + ' -> ' + name)
       }
 
-      if (!cache[name]) {
+      if (notIn(cache, name)) {
         dependencyStack.push(name)
-        cache[name] = registeredFactories[name](provender)
+        cache[name] = factories[name](injectables)
         dependencyStack.pop()
       }
 
       return cache[name]
+    },
+
+    provide: function(name, factory) {
+      validateProvideArgs(name, factory)
+
+      factories[name] = factory
+
+      makeInjectable(name)
+
+      return factory
+    },
+
+    withOverrides: function(overrides) {
+      return CachingInjector(factories, overrides)
     }
   }
 
-  self.withOverrides = function(overrides) {
-    return {
-      get: function(name) {
-        return self.get(name, overrides)
-      }
-    };
-  }
+  return self
+
+  /* private methods below */
 
   function validateProvideArgs(name, factory) {
     if (typeof name !== 'string') {
@@ -71,18 +55,25 @@ function Yavanna() {
       throw Error('Yavanna.provide expects a factory function as the second argument. Check the declaration of `' + name + '`.')
     }
 
-    if (registeredFactories[name]) {
+    if (factories[name]) {
       throw Error('Yavanna: cannot override the previously registered factory for `' + name + '`.')
     }
   }
 
   function validateGetArgs(name) {
-    if (!registeredFactories[name]) {
+    if (!factories[name]) {
       throw Error('Yavanna: no factory registered for `' + name + '`.')
     }
   }
 
-  return self
+  function makeInjectable(name) {
+    Object.defineProperty(injectables, name, {
+      get: function() {
+        return self.get(name)
+      },
+      configurable: true
+    })
+  }
 }
 
 function forEachPropertyIn(obj, fn) {
@@ -91,11 +82,8 @@ function forEachPropertyIn(obj, fn) {
   }
 }
 
-function defineGetter(object, propertyName, getter) {
-  Object.defineProperty(object, propertyName, {
-    get: getter,
-    configurable: true
-  })
+function notIn(cache, name) {
+  return !Object.prototype.hasOwnProperty.call(cache, name)
 }
 
 module.exports = Yavanna

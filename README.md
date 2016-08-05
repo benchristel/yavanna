@@ -18,7 +18,7 @@ const yavanna = require('@benchristel/yavanna')()
 
 ### Register a factory function
 
-Here, our factory is named `peaches` and requires `water` and `sunlight` as dependencies
+Here, our factory is named `peaches` and requires `water` and `sunlight` as dependencies (note that the example below uses ES6 syntax).
 
 ```javascript
 yavanna.provide('peaches', ({water, sunlight}) => {
@@ -33,6 +33,21 @@ yavanna.provide('water', () => 'delicious water')
 yavanna.provide('sunlight', () => 'glorious sunlight')
 ```
 
+And the same thing, with old-school syntax:
+
+```javascript
+yavanna.provide('peaches', function (provided) {
+  if (provided.water && provided.sunlight) {
+    return 'PEACHES!'
+  } else {
+    return 'no peaches :('
+  }
+})
+
+yavanna.provide('water', function () { return 'delicious water' })
+yavanna.provide('sunlight', function () { return 'glorious sunlight' })
+```
+
 ### Get your stuff, with dependencies injected
 
 ```javascript
@@ -42,30 +57,9 @@ yavanna.get('peaches') // returns 'PEACHES!'
 ### Override the dependencies with test doubles
 
 ```javascript
-yavanna.get('peaches', {water: false, sunlight: false}) // returns 'no peaches :('
-```
+testInjector = yavanna.withOverrides({water: false, sunlight: false})
 
-### Terse syntax
-
-Instead of using `.get()` and `.provide()`, you can simply call the function returned from the yavanna constructor.
-
-```javascript
-const inject = require('yavanna')()
-
-yavanna('random', () => () => Math.random())
-
-yavanna('egg', ({random}) => {
-  return {
-    hatch() {
-      if (random() > 0.5) return 'it is an seagull'
-      return 'nought but a soggy chicken'
-    }
-  }
-})
-
-// and then, in your tests
-
-expect(yavanna('egg', {random: () => 0.51}).hatch()).toEqual('it is an seagull')
+testInjector.get('peaches') // returns 'no peaches :('
 ```
 
 ## Why?

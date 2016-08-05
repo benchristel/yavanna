@@ -28,11 +28,6 @@ describe('Yavanna', function() {
     expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
   })
 
-  it('provides peaches with terse syntax', function () {
-    var melian = yv('Melian')
-    expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
-  })
-
   it('errors if you try to get something that doesn\'t exist', function() {
     expect(function() {
       yv.get('nemo')
@@ -93,16 +88,34 @@ describe('Yavanna', function() {
     expect(calls).toEqual(1)
   })
 
-  describe('Injecting test doubles', function() {
+  it('caches the modules returned by factories', function() {
+    var yv = Yavanna()
+    yv.provide('A', function (inj) { return {B: inj.B, C: inj.C} })
+    yv.provide('B', function (inj) { return inj.CommonDependency })
+    yv.provide('C', function (inj) { return inj.CommonDependency })
+    yv.provide('CommonDependency', function () { return {} })
+
+    var A = yv.get('A')
+    expect(A.B === A.C).toBe(true)
+  })
+
+  it('uses the same cache across multiple calls to `get`', function() {
+    var yv = Yavanna()
+    yv.provide('A', function () { return {} })
+
+    expect(yv.get('A') === yv.get('A')).toBe(true)
+  })
+
+  describe('when injecting test doubles', function() {
     it('applies only to the injector returned from withOverrides', function() {
       var yv2 = yv.withOverrides({Peaches: false})
       var melian2 = yv2.get('Melian')
-      var melian = yv.get('Melian')
       expect(melian2.reportOnPeachSituation()).toEqual('not enough peaches :(')
+      var melian = yv.get('Melian')
       expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
     })
 
-    it('reads from a separate cache for modules with overridden dependencies', function() {
+    it('reads from a separate cache', function() {
       var yv = Yavanna()
       yv.provide('Sum', function(inj) { return inj.A + inj.B  })
       yv.provide('A', function() { return 5 })
@@ -115,7 +128,7 @@ describe('Yavanna', function() {
       expect(yv2.get('Sum')).toEqual(7)
     })
 
-    it('writes to a separate cache when overriding dependencies', function() {
+    it('writes to a separate cache', function() {
       var yv = Yavanna()
       yv.provide('Sum', function(inj) { return inj.A + inj.B  })
       yv.provide('A', function() { return 5 })
@@ -148,14 +161,6 @@ describe('Yavanna', function() {
 
       expect(yv2.get('Sum')).toEqual(7)
       expect(yv.get('Sum')).toEqual(11)
-    })
-  })
-
-  describe('Registering dependencies', function() {
-    it('has a terse syntax', function() {
-      var yv = Yavanna()
-      yv('Foo', function () { return 'this is foo' })
-      expect(yv('Foo')).toEqual('this is foo')
     })
   })
 
