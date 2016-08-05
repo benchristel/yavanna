@@ -54,6 +54,14 @@ function Yavanna() {
     }
   }
 
+  self.withOverrides = function(overrides) {
+    return {
+      get: function(name) {
+        return self.get(name, overrides)
+      }
+    };
+  }
+
   function validateProvideArgs(name, factory) {
     if (typeof name !== 'string') {
       throw new Error('Yavanna.provide expects a name as the first argument.')

@@ -79,6 +79,7 @@ describe('Yavanna', function() {
   })
 
   it('builds each dependency at most once per call to `get`', function() {
+    // TODO
     var yv = Yavanna()
     var calls = 0
     yv.provide('A', function (inj) { return inj.B + inj.C })
@@ -93,38 +94,35 @@ describe('Yavanna', function() {
   })
 
   describe('Injecting test doubles', function() {
-    it('works just by calling the factory passed to Yavanna', function() {
-      var melian = Melian({Peaches: false})
-      expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
+    it('applies only to the injector returned from withOverrides', function() {
+      var yv2 = yv.withOverrides({Peaches: false})
+      var melian2 = yv2.get('Melian')
+      var melian = yv.get('Melian')
+      expect(melian2.reportOnPeachSituation()).toEqual('not enough peaches :(')
+      expect(melian.reportOnPeachSituation()).toEqual('PEACHES')
     })
 
-    it('works by passing dependencies to override to Yavanna#get', function() {
-      var melian = yv.get('Melian', {Peaches: false})
-      expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
-    })
-
-    it('works by passing overrides with terse syntax', function() {
-      var melian = yv('Melian', {Peaches: false})
-      expect(melian.reportOnPeachSituation()).toEqual('not enough peaches :(')
-    })
-
-    it('does not read from the cache when overriding dependencies', function() {
+    it('reads from a separate cache for modules with overridden dependencies', function() {
       var yv = Yavanna()
       yv.provide('Sum', function(inj) { return inj.A + inj.B  })
       yv.provide('A', function() { return 5 })
       yv.provide('B', function() { return 7 })
 
       expect(yv.get('Sum')).toEqual(12)
-      expect(yv.get('Sum', {A: 3, B: 4})).toEqual(7)
+
+      var yv2 = yv.withOverrides({A: 3, B: 4})
+
+      expect(yv2.get('Sum')).toEqual(7)
     })
 
-    it('does not write to the cache when overriding dependencies', function() {
+    it('writes to a separate cache when overriding dependencies', function() {
       var yv = Yavanna()
       yv.provide('Sum', function(inj) { return inj.A + inj.B  })
       yv.provide('A', function() { return 5 })
       yv.provide('B', function() { return 7 })
 
-      expect(yv.get('Sum', {A: 3, B: 4})).toEqual(7)
+      var yv2 = yv.withOverrides({A: 3, B: 4})
+      expect(yv2.get('Sum')).toEqual(7)
       expect(yv.get('Sum')).toEqual(12)
     })
 
@@ -134,7 +132,8 @@ describe('Yavanna', function() {
       yv.provide('A', function() { return 5 })
       yv.provide('B', function() { return 7 })
 
-      expect(yv.get('Sum', {B: 3})).toEqual(8)
+      var yv2 = yv.withOverrides({B: 3})
+      expect(yv2.get('Sum')).toEqual(8)
       expect(yv.get('Sum')).toEqual(12)
     })
 
@@ -145,7 +144,9 @@ describe('Yavanna', function() {
       yv.provide('B', function() { return 2 })
       yv.provide('C', function() { return 7 })
 
-      expect(yv.get('Sum', {C: 3})).toEqual(7)
+      var yv2 = yv.withOverrides({C: 3})
+
+      expect(yv2.get('Sum')).toEqual(7)
       expect(yv.get('Sum')).toEqual(11)
     })
   })
