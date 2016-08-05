@@ -24,17 +24,15 @@ function Yavanna() {
     var dependencyStack = []
 
     forEachPropertyIn(registeredFactories, function(key) {
-      Object.defineProperty(provender, key, {
-        get: function() { return getWithCycleDetection(key) },
-        configurable: true
+      defineGetter(provender, key, function() {
+        return getWithCycleDetection(key)
       })
     })
 
     if (overrides) {
       forEachPropertyIn(overrides, function(key) {
-        Object.defineProperty(provender, key, {
-          get: function() { return overrides[key] },
-          configurable: true
+        defineGetter(provender, key, function() {
+          return overrides[key]
         })
       })
     }
@@ -83,6 +81,13 @@ function forEachPropertyIn(obj, fn) {
   for (var key in obj) {
     fn(key)
   }
+}
+
+function defineGetter(object, propertyName, getter) {
+  Object.defineProperty(object, propertyName, {
+    get: getter,
+    configurable: true
+  })
 }
 
 module.exports = Yavanna
