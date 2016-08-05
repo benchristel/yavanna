@@ -48,11 +48,8 @@ function Yavanna() {
 
       if (!cache[name]) {
         dependencyStack.push(name)
-        try {
-          cache[name] = registeredFactories[name](provender)
-        } finally {
-          dependencyStack.pop()
-        }
+        cache[name] = registeredFactories[name](provender)
+        dependencyStack.pop()
       }
 
       return cache[name]
