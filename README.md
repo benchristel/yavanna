@@ -2,7 +2,7 @@
 
 A JavaScript dependency injection framework
 
-![CircleCI Build Status](https://circleci.com/gh/benchristel/yavanna.svg?style=shield&circle-token=058bb5224f0693d2f5891954ce85ce8879c88791)
+**NOTE:** Yavanna is **deprecated** in favor of [Poppins](https://www.npmjs.com/package/poppins). Poppins builds off of lessons learned from Yavanna, has a simpler API with better error messages, and can be `require`d without namespacing.
 
 ## What?
 
